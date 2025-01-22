@@ -11,19 +11,16 @@ void show_menu(int id)
 
 int main(void)
 {
+    int dispatcher = msgget(123456, IPC_CREAT | 0644);
     struct Message MSG;
-    int dispatcher = msgget(12345, IPC_CREAT | 0644);
-    int choice = 0;
+    int choice = 0, input;
     int client_id;
-    char buf[MSG_SIZE];
+    char buf[MSG_SIZE]="";
     system("clear");
     printf("Podaj swoj identyfikator: ");
     scanf("%d", &client_id);
     sleep(1);
     system("clear");
-    strcpy(MSG.mtext, "init");
-    MSG.mtype=1;
-    msgsnd(dispatcher, &MSG, strlen(MSG.mtext)+1, 0);
     while(1)
     {
         show_menu(client_id);
@@ -35,20 +32,16 @@ int main(void)
                 exit(0);
             break;
             case SUBSCRIBE:
+                system("clear");
                 MSG.mtype=1;
-                strcpy(MSG.mtext, "sub");
+                strcpy(MSG.mtext, "1");
                 msgsnd(dispatcher, &MSG, strlen(MSG.mtext)+1, 0);
-                sprintf(buf, "%d", client_id);
-                strcpy(MSG.mtext, buf);
-                msgsnd(dispatcher, &MSG, strlen(MSG.mtext)+1, 0);
-                msgrcv(dispatcher, &MSG, MSG_SIZE, 1, 0);
-                printf("Dostepne typy powiadomien: %s\nWybor: ", MSG.mtext);
-                scanf("%s", buf);
-                while(strstr(MSG.mtext, buf) == NULL)
-                {
-                    printf("Nie ma takiego powiadomienia. Wybor: ");
-                    scanf("%s", buf);
-                }
+                // Odebranie listy producentów
+                msgrcv(dispatcher, &MSG, MSG_SIZE, 2, 0);
+                printf("\nDostepne typy powiadomien: %s\n", MSG.mtext);
+                printf("Wybor: ");
+                scanf("%d", &input);
+                printf("\n");
             break;
             case UNSUBSCRIBE:
             break;

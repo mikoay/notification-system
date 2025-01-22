@@ -23,7 +23,6 @@ enum Tasks
     SUBSCRIBE,
     UNSUBSCRIBE,
     RECEIVE,
-    INIT
 };
 
 int str2int(char text[])

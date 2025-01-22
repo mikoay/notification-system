@@ -1,3 +1,18 @@
-Projekt 2025 - Programowanie systemowe i współbieżne
+Programowanie systemowe i współbieżne - Projekt 2025
 
 Mikołaj Długołęcki, nr 160244, L5
+
+Kolejka klient-dystrybutor
+Przeznaczenie typow:
+1 - prosba o przeslanie wszystkich dostepnych typow powiadomien przez klienta
+2 - przeslanie wszystkich dostepnych powiadomien przez dystrybutora
+3 - przeslanie wybranego typu powiadomienia do dystrybutora przez klienta TODO
+4 - weryfikacja mozliwosci subskrypcji danego powiadomienia i informacja zwrotna przez dystrybutora TODO
+5 - prosba o przeslanie wszystkich subskrybowanych typow powiadomien przez klienta TODO
+6 - przeslanie wszystkich subskrybowanych przez klienta typow powiadomien przez dystrybutora TODO
+7 - przeslanie wybranego typu powiadomienia do dystrybutora przez klienta TODO
+8 - weryfikacja mozliwosci rezygnacji z subskrypcji danego powiadomienia i informacja zwrotna przez dystrybutora TODO
+zmienic typy na szesnastkowe TODO
+
+Kolejka producent-dystrybutor
+1 - zgloszenie powstania nowego typu powiadomienia przez producenta

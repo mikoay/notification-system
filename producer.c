@@ -2,8 +2,8 @@
 
 int main(void)
 {
-    struct Message MSG;
     int msgid = msgget(987654, IPC_CREAT | 0644);
+    struct Message MSG;
     system("clear");
     int producer_id, notification_type;
     char *buf = (char *)malloc(MSG_SIZE * sizeof(char));
