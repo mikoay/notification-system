@@ -1,22 +1,58 @@
 Programowanie systemowe i współbieżne - Projekt 2025
 
-Mikołaj Długołęcki, nr 160244, L5
+Autor: Mikołaj Długołęcki, nr 160244, L5
+Prowadząca: dr hab. inż. Anna Kobusińska
 
-Kolejka klient-dystrybutor
-Przeznaczenie typow:
-0xFFF0 - zgloszenie powstania nowego klienta
-0xFFF1 - prosba o przeslanie wszystkich dostepnych typow powiadomien przez klienta
-0xFFF2 - przeslanie wszystkich dostepnych powiadomien przez dystrybutora
-0xFFF3 - przeslanie wybranego typu powiadomienia do dystrybutora przez klienta
-0xFFF4 - weryfikacja mozliwosci subskrypcji danego powiadomienia i informacja zwrotna przez dystrybutora
-0xFFF5 - prosba o przeslanie wszystkich subskrybowanych typow powiadomien przez klienta
-0xFFF6 - przeslanie wszystkich subskrybowanych przez klienta typow powiadomien przez dystrybutora
-0xFFF7 - przeslanie wybranego typu powiadomienia do dystrybutora przez klienta
-0xFFF8 - weryfikacja mozliwosci rezygnacji z subskrypcji danego powiadomienia i informacja zwrotna przez dystrybutora
-0xFFF9 - prosba klienta o rozpoczenie rozglaszania
-0xFFFA - prosba klienta o zakonczenie rozglaszania
-0xFFFF - zgloszenie zakonczenia procesu do dyspozytora przez klienta TODO
+Kompilacja plików:
+gcc -Wall inf160244_Dlugolecki_p.c -o inf160244_Dlugolecki_p.out
+gcc -Wall inf160244_Dlugolecki_k.c -o inf160244_Dlugolecki_k.out
+gcc -Wall inf160244_Dlugolecki_d.c -o inf160244_Dlugolecki_d.out
 
-Kolejka producent-dystrybutor
-0xFFF0 - zgloszenie powstania nowego typu powiadomienia przez producenta 
-0xFFFF - zgloszenie zakonczenia procesu do dyspozytora przez producenta TODO
+Pliki wykonywalne producenta i klienta przyjmują po jednym parametrze: klucz kolejki producenci-dyspozytor (dla procesów producentów) albo klucz kolejki klienci-dyspozytor (dla procesów klientów). Plik wykonywalny dyspozytora przyjmuje dwa argumenty: klucz kolejki klienci-dyspozytor oraz klucz kolejki producenci-dyspozytor. Oczywiście, aby programwy współpracowały ze sobą klucze kolejki klienci-dyspozytor w plikach wykonywalnych klientów i dyspozytora muszą być te samo. To samo tyczy się plików wykonywalnych producentów i dyspozytora: klucze kolejki producenci-dyspozytor muszą być identyczne.
+Przykład:
+./inf160244_Dlugolecki_d.out 123456 987654
+./inf160244_Dlugolecki_k.out 123456
+./inf160244_Dlugolecki_p.out 987654
+
+Aby całość zadziałała prawidłowo pierwszym uruchomionym procesem musi być plik wykonywalny dyspozytora, ponieważ ten na bieżąco rejestruje pojawienie się nowego procesu klienta/producenta i niezachowanie tej kolejności spowoduje, że niektóre procesy klienta/producenta nie będą widoczne dla dyspozytora albo zakłócą proces pobierania wiadomości z kolejek IPC.
+
+Do komunikacji między procesami wykorzystane zostały dwie kolejki IPC: kolejka klienci-dyspozytor i kolejka producenci-dyspozytor.
+Każdy z producentów przesyła swoją wiadomość do dyspozytora, a ten (jeśli klient chce odbierać wiadomości) przekierowuje odpowiednio wiadomości do każdego z klientów. 
+Dyspozytor na bieżąco aktualizuje listę zarejestrowanych klientów i listę zarejestrowanych producetów, również na bieżąco zarządza subskrypcjami danego klienta oraz na tej podstawie przekierowuje do niego nadchodzące od producentów powiadomienia.
+Do zajmowania się "technicznymi" sprawami (dodanie procesu, rezygnacja z subskrypcji, weryfikacja identyfikatora itp.) przeznaczone zostało 13 typów wiadomości (0xFFF0-0xFFFC) dla kolejki klienci-dyspozytor oraz 3 typy wiadomości (0xFFF0-0xFFF2) dla kolejki producenci-dyspozytor.
+Poniżej wyjaśnione zostały działania każdego "technicznego" typu wiadomości:
+
+ADD_USER (0xFFF0) - zgłoszenie powstania nowego klienta/producenta do dyspozytora
+DELETE_USER (0xFFF1) - zgłoszenie zakończenia procesu klienta/producenta do dyspozytora
+VERIFY_USER (0xFFF2) - sprawdzenie przez dyspozytora unikalności ID klienta/producenta
+REQUEST_TYPES (0xFFF3) - prośba klienta do dyspozytora o przesłanie zarejestrowanych w systemie typów powiadomień
+SEND_TYPES (0xFFF4) - przesłanie do klienta przez dyspozytora wszystkich zarejestrowanych w systemie typów powiadomień
+GET_TYPE (0xFFF5) - przesłanie wybranego przez klienta typu powiadomienia do dyspozytora
+VERIFY_TYPE (0xFFF6) - weryfikacja przez dyspozytora możliwości subskrypcji wybranego przez klienta typu powiadomienia
+REQUEST_SUBSCRIBED (0xFFF7) - prosba klienta do dyspozytora o przesłanie wszystkich subskrybowanych przez niego typów powiadomień
+SEND_SUBSCRIBED (0xFFF8) - przesłanie do klienta wszystkich subskrybowanych przez niego typów powiadomień
+GET_SUBSCRIBED (0xFFF9) - przesłanie do dyspozytora wybranego przez klienta typu powiadomienia, z którego chce zrezygnować
+VERIFY_SUBSCRIBED (0xFFFA) - weryfikacja przez dyspozytora mozliwości rezygnacji klienta z subskrypcji danego typu powiadomienia
+START_RECEIVING (0xFFFB) - prośba klienta o przesyłanie do niego wszystkich subskrybowanych powiadomień
+STOP_RECEIVING (0xFFFC) - prośba klienta o zakończenie przesyłania powiadomień
+
+Każdy z producentów wysyła wiadomości do dyspozytora z określonym typem. Dyspozytor odbiera wiadomości, wybiera odpowiednie dla danego klienta wiadomości na podstawie listy jego subskrypcji oraz przesyła do niego wykorzystując jako typ wiadomości jego identyfikator.
+Przykład:
+Klient o identyfikatorze 2. subskrybuje powiadomienia typu: 1, 2. Producent o identyfikatorze 3. nadaje komunikat typu 1 o treści: "Cześć!".
+Komunikat ten wysyłany jest kolejką producenci-dyspozytor do dyspozytora oraz jako typ 1 (typ komunikatu). Dyspozytor odbiera ten komunikat, przeszukuje listę subskrypcji każdego klienta. Znajduje klienta o ID 2. jako subskrybującego ten typ powiadomienia oraz przesyła do niego tę wiadomość kolejką klienci-dyspozytor oraz jako typ 2 (identyfikator klienta). Klient 2. odbiera powiadomienie i wyświetla je na ekranie.
+
+W implementacji wykorzystane zostały następujące struktury:
+
+- Message - służy do przechowywania informacji o wiadomości przesyłanej kolejką IPC
+    - mtype - zmienna typu całkowitego, określa typ wiadomości,
+    - mtext - zmienna tekstowa, określa zawartość wiadomości 
+
+- Client - służy do przechowywania informacji o kliencie
+    - id - zmienna typu całkowitego, identyfikator klienta (pole unikalne),
+    - num_of_subscriptions - zmienna typu całkowitego, pomocnicza zmienna określająca ile typów powiadomień subskrybuje dany klient,
+    - subscriptions - tablica zmiennych typu całkowitego, zawiera wszystkie subskrybowane przez klienta typy powiadomień,
+    - listening - zmienna typu całkowitego (ale wykorzystywana jest jako zmienna binarna), służy do stwierdzenia czy dany klient aktualnie nasłuchuje rozgłaszane wiadomości czy też nie
+
+- Producer - służy do przechowywania informacji o producencie
+    - id - zmienna typu całkowitego, identyfikator producenta (pole unikalne),
+    - notification_type - zmienna typu całkowitego, typ powiadomienia nadawanego przez tego producenta

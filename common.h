@@ -12,6 +12,7 @@
 #define MSG_SIZE 512
 #define MAX_PRODUCERS 20
 #define MAX_CLIENTS 20
+#define MAX_TYPES 50
 #define MAX_SUBSCRIPTIONS 100
 
 struct Message
@@ -20,15 +21,28 @@ struct Message
     char mtext[MSG_SIZE];
 };
 
-struct ClientSubs
+struct Client
 {
-    int client_id;
-    int num_of_subscriptions;
+    int id;
     int subscriptions[MAX_SUBSCRIPTIONS];
+    int num_of_subscriptions;
     int listening;
 };
 
-enum ClientTasks
+struct Producer
+{
+    int id;
+    int notification_type;
+};
+
+struct Types
+{
+    int notification_type;
+    int clients[MAX_CLIENTS];
+    int num_of_clients;
+};
+
+enum ClientOptions
 {
     EXIT=0,
     SUBSCRIBE,
@@ -37,10 +51,27 @@ enum ClientTasks
     RECEIVE,
 };
 
-enum ProducerTasks
+enum ProducerOptions
 {
     NOTIFY_SINGLE=1,
     NOTIFY_STILL
+};
+
+enum DispatcherTasks
+{
+    ADD_USER = 0xFFF0,
+    DELETE_USER,
+    VERIFY_USER,
+    REQUEST_TYPES,
+    SEND_TYPES,
+    GET_TYPE,
+    VERIFY_TYPE,
+    REQUEST_SUBSCRIBED,
+    SEND_SUBSCRIBED,
+    GET_SUBSCRIBED,
+    VERIFY_SUBSCRIBED,
+    START_RECEIVING,
+    STOP_RECEIVING
 };
 
 int str2int(char text[])
