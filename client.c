@@ -19,8 +19,7 @@ void stop_listening()
 
 int main(int argc, char *argv[])
 {
-    if(argc != 2)
-    {
+    if(argc != 2){
         printf("Uzycie: %s <klucz kolejki klienci-dyspozytor>\n", argv[0]);
         return -1;
     }
@@ -37,8 +36,7 @@ int main(int argc, char *argv[])
     strcpy(MSG.mtext, int2str(client_id));
     msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
     msgrcv(dispatcher_queue, &MSG, MSG_SIZE, VERIFY_USER, 0);
-    if(str2int(MSG.mtext) == 0)
-    {
+    if(str2int(MSG.mtext) == 0){
         printf("Klient o podanym ID juz istnieje\n");
         sleep(2);
         system("clear");
@@ -47,15 +45,13 @@ int main(int argc, char *argv[])
     printf("Pomyslnie dodano nowego klienta\n");
     sleep(2);
     system("clear");
-    while(1)
-    {
+    while(1){
         show_menu(client_id);
         printf("Wybor: ");
         scanf("%d", &choice);
         sleep(1);
         system("clear");
-        switch(choice)
-        {
+        switch(choice){
             case EXIT:
                 MSG.mtype=DELETE_USER;
                 strcpy(MSG.mtext, int2str(client_id));
@@ -67,14 +63,12 @@ int main(int argc, char *argv[])
                 strcpy(MSG.mtext, int2str(client_id));
                 msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
                 msgrcv(dispatcher_queue, &MSG, MSG_SIZE, SEND_TYPES, 0);
-                if(strcmp(MSG.mtext, "BRAK") != 0)
-                {
+                if(strcmp(MSG.mtext, "BRAK") != 0){
                     printf("Dostepne typy powiadomien: %s\n", MSG.mtext);
                     printf("Wybor: ");
                     scanf("%d", &input);
                     system("clear");
-                    if(strstr(MSG.mtext, int2str(input)) != NULL)
-                    {
+                    if(strstr(MSG.mtext, int2str(input)) != NULL){
                         MSG.mtype=GET_TYPE;
                         strcpy(MSG.mtext, int2str(input));
                         msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
@@ -82,14 +76,9 @@ int main(int argc, char *argv[])
                         printf("%s", MSG.mtext);
                         sleep(2);
                         system("clear");
-                    }
-                    else
-                    {
+                    }else
                         printf("Nie ma takiego typu powiadomienia\n");
-                    }
-                }
-                else
-                {
+                }else{
                     printf("Brak dostepnych typow powiadomien\n");
                     sleep(2);
                     system("clear");
@@ -101,19 +90,15 @@ int main(int argc, char *argv[])
                 strcpy(MSG.mtext, int2str(client_id));
                 msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
                 msgrcv(dispatcher_queue, &MSG, MSG_SIZE, SEND_SUBSCRIBED, 0);
-                if(strcmp(MSG.mtext, "BRAK") != 0)
-                {
+                if(strcmp(MSG.mtext, "BRAK") != 0){
                     printf("Subskrybowane typy powiadomien: %s\nWybor: ", MSG.mtext);
                     scanf("%d", &input);
                     sleep(2);
                     system("clear");
-                    if(strstr(MSG.mtext, int2str(input)) == NULL)
-                    {
+                    if(strstr(MSG.mtext, int2str(input)) == NULL){
                         printf("Nie ma takiego typu powiadomienia\n");
                         sleep(2);
-                    }
-                    else
-                    {
+                    }else{
                         MSG.mtype=GET_SUBSCRIBED;
                         strcpy(MSG.mtext, int2str(input));
                         msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
@@ -121,9 +106,7 @@ int main(int argc, char *argv[])
                         printf("%s", MSG.mtext);
                         sleep(1);
                     }
-                }
-                else
-                {
+                }else{
                     printf("Nie subskrybujesz zadnych powiadomien\n");
                     sleep(2);
                     system("clear");
@@ -134,14 +117,11 @@ int main(int argc, char *argv[])
                 strcpy(MSG.mtext, int2str(client_id));
                 msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
                 msgrcv(dispatcher_queue, &MSG, MSG_SIZE, SEND_SUBSCRIBED, 0);
-                if(strcmp(MSG.mtext, "BRAK") != 0)
-                {
+                if(strcmp(MSG.mtext, "BRAK") != 0){
                     printf("Subskrybowane typy powiadomien: %s\n", MSG.mtext);
                     sleep(3);
                     system("clear");
-                }
-                else
-                {
+                }else{
                     printf("Nie subskrybujesz zadnych powiadomien\n");
                     sleep(2);
                     system("clear");
@@ -154,12 +134,9 @@ int main(int argc, char *argv[])
                 msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
                 listening = 1;
                 signal(SIGINT, stop_listening);
-                while(listening)
-                {
+                while(listening){
                     if(msgrcv(dispatcher_queue, &MSG, MSG_SIZE, client_id, IPC_NOWAIT) != -1)
-                    {
                         printf("Powiadomienie: %s\n", MSG.mtext);
-                    }
                 }
                 signal(SIGINT, SIG_DFL);
                 MSG.mtype=STOP_RECEIVING;

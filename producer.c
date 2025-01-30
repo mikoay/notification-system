@@ -17,8 +17,7 @@ void stop_notifying()
 
 int main(int argc, char *argv[])
 {
-    if(argc != 2)
-    {
+    if(argc != 2){
         printf("Uzycie: %s <klucz kolejki producenci-dyspozytor>\n", argv[0]);
         return -1;
     }
@@ -40,63 +39,57 @@ int main(int argc, char *argv[])
     msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
     msgrcv(dispatcher_queue, &MSG, MSG_SIZE, VERIFY_USER, 0);
     system("clear");
-    if(str2int(MSG.mtext) == 0)
-    {
+    if(str2int(MSG.mtext) == 0){
         printf("Producent o podanym ID lub typie nadawanych powiadomien juz istnieje\n");
         sleep(1);
         system("clear");
         return -1;
-    }
-    else
-    {
+    }else{
         printf("Pomyslnie dodano nowego producenta\n");
     }
     sleep(1);
     system("clear");
     MSG.mtype=notification_type;
-    while(1)
-    {
+    while(1){
         show_menu(producer_id);
         printf("Wybor: ");
         scanf("%d", &choice);
         sleep(1);
         system("clear");
-        switch (choice)
-        {
-        case EXIT:
-            MSG.mtype=DELETE_USER;
-            strcpy(MSG.mtext, int2str(producer_id));
-            msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, IPC_NOWAIT);
-            return 0;
-        break;
-        case NOTIFY_SINGLE:
-            printf("Nadasz teraz jedno powiadomienie typu %d\n\n", notification_type);
-            while(getchar() != '\n');
-            printf("Tresc powiadomienia: ");
-            getline(&buf, &buf_size, stdin);
-            buf[strlen(buf)-1]=0;
-            strcpy(MSG.mtext, buf);
-            msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
-            sleep(1);
-        break;
-        case NOTIFY_STILL:
-            printf("Trwa nadawanie powiadomien typu %d.\nWyslij sygnal SIGINT (Ctrl+C) i potwierdz Enterem, aby przerwac nadawanie\n\n", notification_type);
-            while(getchar() != '\n');
-            signal(SIGINT, stop_notifying);
-            notifying = 1;
-            while(notifying)
-            {
+        switch (choice){
+            case EXIT:
+                MSG.mtype=DELETE_USER;
+                strcpy(MSG.mtext, int2str(producer_id));
+                msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, IPC_NOWAIT);
+                return 0;
+            break;
+            case NOTIFY_SINGLE:
+                printf("Nadasz teraz jedno powiadomienie typu %d\n\n", notification_type);
+                while(getchar() != '\n');
                 printf("Tresc powiadomienia: ");
                 getline(&buf, &buf_size, stdin);
                 buf[strlen(buf)-1]=0;
                 strcpy(MSG.mtext, buf);
                 msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
-            }
-            signal(SIGINT, SIG_DFL);
-        break;
-        default:
-            printf("Niepoprawny wybor\n");
-        break;
+                sleep(1);
+            break;
+            case NOTIFY_STILL:
+                printf("Trwa nadawanie powiadomien typu %d.\nWyslij sygnal SIGINT (Ctrl+C) i potwierdz Enterem, aby przerwac nadawanie\n\n", notification_type);
+                while(getchar() != '\n');
+                signal(SIGINT, stop_notifying);
+                notifying = 1;
+                while(notifying){
+                    printf("Tresc powiadomienia: ");
+                    getline(&buf, &buf_size, stdin);
+                    buf[strlen(buf)-1]=0;
+                    strcpy(MSG.mtext, buf);
+                    msgsnd(dispatcher_queue, &MSG, strlen(MSG.mtext)+1, 0);
+                }
+                signal(SIGINT, SIG_DFL);
+            break;
+            default:
+                printf("Niepoprawny wybor\n");
+            break;
         }
         system("clear");
     }
